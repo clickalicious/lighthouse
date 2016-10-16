@@ -29,7 +29,6 @@ type Mode = 'pretty' | 'json' | 'html';
 interface SubScore {
   displayValue: string;
   debugString: string;
-  comingSoon?: boolean;
   score: number;
   description: string;
   extendedInfo?: {
@@ -126,6 +125,7 @@ function createOutput(results: Results, outputMode: OutputMode): string {
   let output = `\n\n${bold}Lighthouse (${version}) results:${reset} ${results.url}\n\n`;
 
   results.aggregations.forEach(aggregation => {
+
     output += `▫ ${bold}${aggregation.name}${reset}\n\n`;
 
     aggregation.score.forEach(item => {
@@ -136,12 +136,8 @@ function createOutput(results: Results, outputMode: OutputMode): string {
       }
 
       item.subItems.forEach(subitem => {
-        // Get audit object from inside of results.audits under name subitem.
-        // Coming soon events are not located inside of results.audits.
-        subitem = results.audits[subitem as any] || subitem;
-
-        if (subitem.comingSoon) {
-          return;
+        if (typeof subitem === 'string') {
+          subitem = results.audits[subitem as string];
         }
 
         let lineItem = ` ── ${formatScore(subitem.score)} ${subitem.description}`;
