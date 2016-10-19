@@ -41,7 +41,7 @@ interface Score {
   overall: number;
   name: string;
   scored: boolean;
-  subItems: Array<SubScore>;
+  subItems: Array<SubScore | string>;
 }
 
 interface Aggregation {
@@ -136,23 +136,27 @@ function createOutput(results: Results, outputMode: OutputMode): string {
       }
 
       item.subItems.forEach(subitem => {
+        let subscore: SubScore;
+
         if (typeof subitem === 'string') {
-          subitem = results.audits[subitem as string];
+          subscore = results.audits[subitem as string];
+        } else {
+          subscore = subitem as SubScore;
         }
 
-        let lineItem = ` ── ${formatScore(subitem.score)} ${subitem.description}`;
-        if (subitem.displayValue) {
-          lineItem += ` (${bold}${subitem.displayValue}${reset})`;
+        let lineItem = ` ── ${formatScore(subscore.score)} ${subscore.description}`;
+        if (subscore.displayValue) {
+          lineItem += ` (${bold}${subscore.displayValue}${reset})`;
         }
         output += `${lineItem}\n`;
-        if (subitem.debugString) {
-          output += `    ${subitem.debugString}\n`;
+        if (subscore.debugString) {
+          output += `    ${subscore.debugString}\n`;
         }
 
-        if (subitem.extendedInfo && subitem.extendedInfo.value) {
+        if (subscore.extendedInfo && subscore.extendedInfo.value) {
           const formatter =
-              Formatter.getByName(subitem.extendedInfo.formatter).getFormatter('pretty');
-          output += `${formatter(subitem.extendedInfo.value)}`;
+              Formatter.getByName(subscore.extendedInfo.formatter).getFormatter('pretty');
+          output += `${formatter(subscore.extendedInfo.value)}`;
         }
       });
 
