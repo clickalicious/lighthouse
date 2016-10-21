@@ -26,7 +26,7 @@
 enum OutputMode { pretty, json, html };
 type Mode = 'pretty' | 'json' | 'html';
 
-interface SubScore {
+interface AuditResult {
   displayValue: string;
   debugString: string;
   score: number;
@@ -37,16 +37,16 @@ interface SubScore {
   };
 }
 
-interface Score {
+interface AggregationResultItem {
   overall: number;
   name: string;
   scored: boolean;
-  subItems: Array<SubScore | string>;
+  subItems: Array<AuditResult | string>;
 }
 
 interface Aggregation {
   name: string;
-  score:  Array<Score>;
+  score:  Array<AggregationResultItem>;
 }
 
 interface Results {
@@ -73,7 +73,7 @@ function checkOutputPath(path: string): string {
   return path;
 }
 
-function formatScore(score: boolean | number | string, suffix?: string) {
+function formatAggregationResultItem(score: boolean | number | string, suffix?: string) {
   // Until we only support node 6 we can not use default args.
   suffix = suffix || '';
 
@@ -132,19 +132,19 @@ function createOutput(results: Results, outputMode: OutputMode): string {
       const score = (item.overall * 100).toFixed(0);
 
       if (item.name) {
-        output += `${bold}${item.name}${reset}: ${item.scored ? formatScore(score, '%') : ''}\n`;
+        output += `${bold}${item.name}${reset}: ${item.scored ? formatAggregationResultItem(score, '%') : ''}\n`;
       }
 
       item.subItems.forEach(subitem => {
-        let subscore: SubScore;
+        let subscore: AuditResult;
 
         if (typeof subitem === 'string') {
           subscore = results.audits[subitem as string];
         } else {
-          subscore = subitem as SubScore;
+          subscore = subitem as AuditResult;
         }
 
-        let lineItem = ` ── ${formatScore(subscore.score)} ${subscore.description}`;
+        let lineItem = ` ── ${formatAggregationResultItem(subscore.score)} ${subscore.description}`;
         if (subscore.displayValue) {
           lineItem += ` (${bold}${subscore.displayValue}${reset})`;
         }
